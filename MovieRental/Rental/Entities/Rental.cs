@@ -24,5 +24,7 @@ namespace MovieRental.Rental.Entities
 
         [ForeignKey("Customer")]
         public int CustomerId { get; set; }
+
+        public double Amount { get; set; }
     }
 }

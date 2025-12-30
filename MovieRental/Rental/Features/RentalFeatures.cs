@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MovieRental.Data;
+using MovieRental.PaymentMethod.Factory;
 
 namespace MovieRental.Rental.Features
 {
@@ -14,6 +15,15 @@ namespace MovieRental.Rental.Features
 
 		public async Task<DTO.Rental> Save(Requests.RentalSaveRequest input)
 		{
+            var provider = PaymentMethodFactory.GetProvider(input.PaymentMethodId); 
+			var success = await provider.Pay(input.Amount);
+
+            if (!success)
+            { 
+				// TODO: Log failure or notify user
+				return null;
+			}
+
             var entity = new Entities.Rental
             {
                 MovieId = input.MovieId,
