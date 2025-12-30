@@ -1,6 +1,6 @@
+using FluentValidation;
 using MovieRental.Data;
-using MovieRental.Movie;
-using MovieRental.Rental;
+using MovieRental.Rental.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +10,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddEntityFrameworkSqlite().AddDbContext<MovieRentalDbContext>();
 
 builder.Services.AddScoped<IRentalFeatures, RentalFeatures>();
+builder.Services.AddScoped<IValidator<MovieRental.Rental.Requests.RentalSaveRequest>, MovieRental.Rental.Validators.RentalSaveRequestValidator>();
+builder.Services.AddScoped<IValidator<string>, MovieRental.Rental.Validators.RentalCustomerNameValidator>();
 
 var app = builder.Build();
 

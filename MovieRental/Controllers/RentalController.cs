@@ -1,6 +1,8 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using MovieRental.Movie;
-using MovieRental.Rental;
+using MovieRental.Rental.Features;
+using System.Net;
+using Requests = MovieRental.Rental.Requests;
 
 namespace MovieRental.Controllers
 {
@@ -18,10 +20,46 @@ namespace MovieRental.Controllers
 
 
         [HttpPost]
-        public IActionResult Post([FromBody] Rental.Rental rental)
+        public async Task<IActionResult> Post([FromBody] Requests.RentalSaveRequest input,
+            [FromServices] IValidator<Requests.RentalSaveRequest> validator)
         {
-	        return Ok(_features.Save(rental));
+            try
+            {
+                var validationResult = await validator.ValidateAsync(input);
+
+                if (!validationResult.IsValid)
+                {
+                    return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+                }
+
+                var savedRental = await _features.Save(input);
+                return Ok(savedRental);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
         }
 
-	}
+        [HttpGet("{customerName}")]
+        public async Task<IActionResult> Get(string customerName,
+            [FromServices] IValidator<string> validator)
+        {
+            try
+            {
+                var validationResult = await validator.ValidateAsync(customerName);
+
+                if (!validationResult.IsValid)
+                {
+                    return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+                }
+
+                return Ok(await _features.GetRentalsByCustomerName(customerName));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+    }
 }
